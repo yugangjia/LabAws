@@ -23,7 +23,8 @@ from hyperimpute.utils.benchmarks import compare_models
 from hyperimpute.plugins.imputers import Imputers
 from tqdm import tqdm
 eps = 1e-8
-device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 class ReMasker:
 
@@ -37,7 +38,7 @@ class ReMasker:
         self.weight_decay = args.weight_decay
         self.lr = args.lr
         self.blr = args.blr
-        self.warmup_epochs = 20
+        self.warmup_epochs = 20 #originally 20
         self.model = None
         self.norm_parameters = None
 
