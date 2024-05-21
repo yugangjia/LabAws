@@ -51,7 +51,7 @@ class ReMasker:
         self.mask_ratio = 0.5
         self.encode_func = args.encode_func
 
-    def fit(self, X_raw: pd.DataFrame):
+    def fit(self, X_raw: pd.DataFrame,save_path: str = None):
 
         X = X_raw.copy()
 
@@ -177,15 +177,16 @@ class ReMasker:
             #     torch.save(self.model.state_dict(), self.path)
             # if (epoch + 1) % 10 == 0 or epoch == 0:
             print((epoch+1),',', total_loss)
-
-        #torch.save(self.model.state_dict(), self.path)
+        if save_path:
+            torch.save(self.model.state_dict(), save_path)
+            print(f"Model saved to save_path")
         return self
 
     def transform(self, X_raw: torch.Tensor):
         if not torch.is_tensor(X_raw):
             X_raw = torch.tensor(X_raw.values) 
         X = X_raw.clone()
-
+        print(self.norm_parameters)
         min_val = self.norm_parameters["min"]
         max_val = self.norm_parameters["max"]
 
