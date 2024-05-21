@@ -176,9 +176,9 @@ class ReMasker:
             #     best_loss = total_loss
             #     torch.save(self.model.state_dict(), self.path)
             # if (epoch + 1) % 10 == 0 or epoch == 0:
-            # print((epoch+1),',', total_loss)
+            print((epoch+1),',', total_loss)
 
-        # torch.save(self.model.state_dict(), self.path)
+        #torch.save(self.model.state_dict(), self.path)
         return self
 
     def transform(self, X_raw: torch.Tensor):

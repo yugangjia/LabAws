@@ -13,8 +13,13 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from math import sqrt
 
-X_test = pd.read_csv('sample_test.csv')
-X_train = pd.read_csv('sample_train.csv')
+
+X_test = pd.read_csv('X_test.csv',header=None)
+X_train = pd.read_csv('X_train.csv',header=None)
+print(X_test.head)
+print(X_test.shape)
+print(X_train.head)
+print(X_train.shape)
 # # Function to generate new column names
 # def generate_new_name(old_name):
 #     counter=1
@@ -49,58 +54,42 @@ imputer.fit(X_train)
 print("fitting finished")
 
 # Function to mask values in a column
-def mask_values(data, column):
-    masked_data = data.copy()
-    # Randomly mask a certain percentage of the column - adjust as necessary
-    mask = np.random.rand(len(masked_data)) < 0.1
-    masked_data.loc[mask, column] = np.nan
-    return masked_data
+
 print(X_test.columns)
-imputedResult=pd.DataFrame()
-originalTest=pd.DataFrame()
-# Evaluate performance for each of the testX columns
-for column, column_name in enumerate(X_test.columns):
-    print("we are in")
-    # Create a copy of X_test with the current column masked
-    column=column
-    X_test_masked = mask_values(X_test, column_name)
-    
-    # Impute missing values
-    X_test_imputed =  pd.DataFrame(imputer.transform(X_test_masked).cpu().numpy())
-    
 
-    thingOne=X_test_imputed.iloc[:,column].dropna()
-    imputedResult = pd.concat([imputedResult, thingOne], axis=1)
-    thingTwo=X_test.iloc[:,column].dropna()
+ItemID = 0
 
-    originalTest=pd.concat([originalTest, thingTwo], axis=1)
-
-    print("imputedResult")
-    print(imputedResult.columns)
-    print("originalTest")
-    print(originalTest.columns)
-
-imputedResult.to_csv("imputedResult.csv")
-originalTest.to_csv("originalTest.csv")
-with open('evaluation_results_yesterday.txt', 'w') as file:
-    for column, column_name in enumerate(X_test.columns[:8]):
-        # Create a copy of X_test with the current column masked
-        X_test_masked = X_test.copy()
-        X_test_masked.iloc[:,column]=np.nan
-        
-        # Impute missing values
-        X_test_imputed =  pd.DataFrame(imputer.transform(X_test_masked).cpu().numpy())
-        
+y_test = X_test.iloc[:,ItemID]
+y_last = X_test.iloc[:,20+ItemID]
+print("imputation started")
+X_test_masked = X_test.copy()
+X_test_masked.iloc[:,ItemID] = np.nan
+y_pred =  imputer.transform(X_test_masked).cpu().numpy()
+print("imputation done")
 
 
-        # Calculate RMSE, MAE, and R2 for the imputed column
-        rmse = sqrt(mean_squared_error(X_test.iloc[:, column].dropna(), X_test_imputed.iloc[:, column].dropna()))
-        mae = mean_absolute_error(X_test.iloc[:, column].dropna(), X_test_imputed.iloc[:, column].dropna())
-        r2 = r2_score(X_test.iloc[:, column].dropna(), X_test_imputed.iloc[:, column].dropna())
-        
-        # Construct the output string
-        output_str = f"Evaluation for {column_name}: RMSE = {rmse}, MAE = {mae}, R2 = {r2}\n"
-        
-        # Write to file and print
-        file.write(output_str)
-        print(output_str)
+np.savetxt('y_test.csv', y_test, delimiter=',')
+np.savetxt('y_last.csv', y_last, delimiter=',')
+np.savetxt('y_pred.csv', y_pred, delimiter=',')
+
+print("saves done")
+normal_ranges = [(3.5,5),(136,145),(98,106),(37,50),(0.7,1.3),(23,28),(7,13),(8,20),(0,200),(150,450)]
+
+mse, r2, cm = mse_r2_confusion_matrix(y_test, y_pred, normal_ranges[ItemID])
+
+print("Overall MAE MSE:", round(mse,3))
+print("Overall MAE R-squared:", round(r2,3))
+print("Overall MAE Confusion matrix:\n", cm)
+
+
+valid_pos = ~np.isnan(y_last)
+print('Test with the last value',len(y_last[valid_pos]))
+mse, r2, cm = mse_r2_confusion_matrix(y_test, y_last, normal_ranges[ItemID])
+print("last value prediction MSE per column:", round(mse,3))
+print("last value prediction R-squared per column:", round(r2,3))
+print("last value prediction Confusion matrix:\n", cm)
+
+mse, r2, cm = mse_r2_confusion_matrix(y_test[valid_pos], y_pred[valid_pos], normal_ranges[ItemID])
+print("MAE for those with last value MSE :", round(mse,3))
+print("MAE for those with last value R-squared:", round(r2,3))
+print("MAE for those with last value Confusion matrix:\n", cm)
