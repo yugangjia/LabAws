@@ -45,7 +45,7 @@ class ReMasker:
         self.decoder_depth = args.decoder_depth
         self.num_heads = args.num_heads
         self.mlp_ratio = args.mlp_ratio
-        self.max_epochs = 1
+        self.max_epochs = 50
         self.mask_ratio = 0.5
         self.encode_func = args.encode_func
         self.dim = None  # Add dim as an attribute
@@ -170,7 +170,7 @@ class ReMasker:
 
                 with torch.cuda.amp.autocast():
                     loss, _, _, _ = self.model(samples, masks, mask_ratio=self.mask_ratio)
-                    loss_value = loss.item()
+                    loss_value = loss.mean()
                     total_loss += loss_value
 
                 if not math.isfinite(loss_value):
@@ -178,7 +178,8 @@ class ReMasker:
                     sys.exit(1)
 
                 loss /= self.accum_iter
-                loss_scaler(loss, self.optimizer, parameters=self.model.parameters(),
+
+                loss_scaler(loss.mean(), self.optimizer, parameters=self.model.parameters(),
                             update_grad=(iter + 1) % self.accum_iter == 0)
 
                 if (iter + 1) % self.accum_iter == 0:

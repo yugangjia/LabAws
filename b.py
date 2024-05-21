@@ -14,10 +14,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from math import sqrt
 
 
-X_test = pd.read_csv('X_test.csv',header=None)
 X_train = pd.read_csv('X_train.csv',header=None)
-print(X_test.head)
-print(X_test.shape)
 print(X_train.head)
 print(X_train.shape)
 # # Function to generate new column names
@@ -49,7 +46,7 @@ print("fitting started")
 imputer = ReMasker()
 
 # Since ReMasker is an imputer, we directly fit it on X_train
-imputer.fit(X_train)
+imputer.fit(X_train,'MAE_10lab')
 
 print("fitting finished")
 
