@@ -204,7 +204,10 @@ class MaskedAutoencoder(nn.Module):
         
         
         loss = (pred.squeeze(dim=2) - target) ** 2
-        loss = (loss * mask).sum() / mask.sum()  + (loss * nask).sum() / nask.sum()
+        if mask.sum()==0:
+            loss =  (loss * nask).sum() / nask.sum()
+        else:
+            loss = (loss * mask).sum() / mask.sum()  + (loss * nask).sum() / nask.sum()
         # mean loss on removed patches
         
         return loss
